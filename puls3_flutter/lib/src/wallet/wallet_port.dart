@@ -1,3 +1,5 @@
+import 'sep10/sep10_challenge_check.dart';
+
 /// The Stellar Testnet passphrase: the only network the MVP accepts.
 const stellarTestnetPassphrase = 'Test SDF Network ; September 2015';
 
@@ -43,6 +45,18 @@ abstract interface class WalletPort {
   /// account (ADR-0003: the builder's step of `set_agent_wallet`, #18) and
   /// returns the signed entry as base64 XDR.
   Future<String> signAuthEntry(String entryXdr);
+
+  /// Signs a SEP-10 challenge for the connected account and returns the
+  /// signed envelope as base64 XDR (design D12, scenarios W38–W40).
+  ///
+  /// The challenge is checked against [expected] with
+  /// [Sep10ChallengeCheck] before the wallet is ever prompted. Throws
+  /// [WalletInvalidChallenge] or [WalletWrongNetwork] without a prompt when
+  /// a check fails, and [WalletSignatureRejected] when the user declines.
+  Future<String> signChallenge(
+    String challengeXdr,
+    ChallengeExpectations expected,
+  );
 }
 
 /// Why the wallet could not connect or sign. Nothing was signed, so the
@@ -96,4 +110,49 @@ final class WalletInvalidPayload extends WalletException {
 
   @override
   String toString() => 'WalletInvalidPayload: $reason';
+}
+
+/// Which SEP-10 rule a challenge broke.
+enum ChallengeRejection {
+  /// Not a canonical standard transaction envelope.
+  malformed,
+
+  /// The transaction source is not the configured server key.
+  source,
+
+  /// The sequence number is not 0.
+  sequence,
+
+  /// An operation is not `manage_data`.
+  operationType,
+
+  /// The first operation is not for the connected account, or another
+  /// operation is not sourced by the server key.
+  operationSource,
+
+  /// The first operation is not named `<home domain> auth`.
+  homeDomain,
+
+  /// The `web_auth_domain` operation is missing or has another value.
+  webAuthDomain,
+
+  /// Time bounds are missing, infinite, not yet valid or expired.
+  timeBounds,
+
+  /// The server signature is missing, extra, or does not verify on the
+  /// expected network.
+  serverSignature,
+}
+
+/// A SEP-10 challenge failed the client check, so the wallet was not
+/// prompted and nothing was signed. It is a [WalletInvalidPayload], so
+/// existing error mapping treats it as an unsafe payload.
+final class WalletInvalidChallenge extends WalletInvalidPayload {
+  const WalletInvalidChallenge(this.rejection)
+    : super('The sign-in challenge failed the client check.');
+
+  final ChallengeRejection rejection;
+
+  @override
+  String toString() => 'WalletInvalidChallenge: ${rejection.name}';
 }

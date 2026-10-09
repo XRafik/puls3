@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../sep10/sep10_challenge_check.dart';
 import '../wallet_port.dart';
 import 'freighter_bridge.dart';
 
@@ -95,6 +96,13 @@ final class FreighterWallet implements WalletPort {
     }
     return signedXdr;
   }
+
+  /// Not supported yet: fails closed before any prompt.
+  @override
+  Future<String> signChallenge(
+    String challengeXdr,
+    ChallengeExpectations expected,
+  ) async => throw const WalletUnavailable();
 
   /// Freighter's `signAuthEntry` signs a `HashIdPreimage`, not an entry, so
   /// this builds the preimage for the entry's arm (legacy ADDRESS or

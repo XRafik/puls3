@@ -7,6 +7,7 @@ import 'package:puls3_flutter/src/screens/hire_sheet.dart';
 import 'package:puls3_flutter/src/state/agent_catalog.dart';
 import 'package:puls3_flutter/src/state/app_scope.dart';
 import 'package:puls3_flutter/src/state/wallet_controller.dart';
+import 'package:puls3_flutter/src/wallet/sep10/sep10_challenge_check.dart';
 import 'package:puls3_flutter/src/wallet/wallet_port.dart';
 
 class TestWallet implements WalletPort {
@@ -38,6 +39,12 @@ class TestWallet implements WalletPort {
 
   @override
   Future<String> signAuthEntry(String entryXdr) async => entryXdr;
+
+  @override
+  Future<String> signChallenge(
+    String challengeXdr,
+    ChallengeExpectations expected,
+  ) async => challengeXdr;
 
   @override
   Future<String> signTransaction(String unsignedXdr) async {
