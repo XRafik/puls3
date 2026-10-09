@@ -147,8 +147,8 @@ Commit: `feat(app): validate a SEP-10 challenge before the wallet prompt`
 
 ### Commit 3: Freighter signChallenge
 
-- [ ] 13.1 RED: `freighter_sign_challenge_test.dart`. After the check passes, `signChallenge` calls `bridge.signTransaction` and skips the source-account binding. A changed body or a signature that is not from the connected account is rejected. A failed check never calls the bridge (W39). No change to `freighter_bridge.js`. Done when it fails.
-- [ ] 13.2 GREEN: `FreighterWallet.signChallenge` (D13). Done when 13.1 is green.
+- [x] 13.1 RED: `freighter_sign_challenge_test.dart`. After the check passes, `signChallenge` calls `bridge.signTransaction` and skips the source-account binding. A changed body or a signature that is not from the connected account is rejected. A failed check never calls the bridge (W39). No change to `freighter_bridge.js`. Done when it fails. Done: `test/wallet/freighter_sign_challenge_test.dart` failed to compile: `No named parameter with the name 'challengeCheck'`.
+- [x] 13.2 GREEN: `FreighterWallet.signChallenge` (D13). Done when 13.1 is green. Done: 9 tests green, and the 19 `freighter_wallet_test` cases still pass. The active-session check runs first, then `Sep10ChallengeCheck`, then `bridge.signTransaction`. The post-signing checks moved into one helper shared with `signTransaction`, which still refuses a server-sourced challenge. `freighter_bridge.js` is unchanged.
 
 Commit: `feat(app): sign a validated SEP-10 challenge with Freighter`
 

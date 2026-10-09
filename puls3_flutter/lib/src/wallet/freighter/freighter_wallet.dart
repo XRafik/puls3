@@ -17,9 +17,15 @@ import 'freighter_bridge.dart';
 /// transaction body is unchanged and carries a valid new signature from the
 /// connected account on Testnet.
 final class FreighterWallet implements WalletPort {
-  FreighterWallet(this._bridge);
+  FreighterWallet(
+    this._bridge, {
+    this.challengeCheck = const Sep10ChallengeCheck(),
+  });
 
   final FreighterBridge _bridge;
+
+  /// The SEP-10 check run before a challenge reaches Freighter (D12).
+  final Sep10ChallengeCheck challengeCheck;
   FreighterSession? _session;
 
   @override
@@ -65,9 +71,45 @@ final class FreighterWallet implements WalletPort {
     }
     _assertSourceBinding(unsigned, session);
 
+    return _signChecked(unsigned, unsignedXdr, session, Network.TESTNET);
+  }
+
+  /// D13: a challenge is sourced by the server, so the source binding of
+  /// [signTransaction] does not apply. It is skipped only after the SEP-10
+  /// check has passed for the connected account; the post-signing checks
+  /// are the same.
+  @override
+  Future<String> signChallenge(
+    String challengeXdr,
+    ChallengeExpectations expected,
+  ) async {
+    final session = _requireSession();
+    await _assertActiveSession(session);
+    final challenge = challengeCheck.validate(
+      challengeXdr,
+      expected: expected,
+      account: session.address,
+      walletNetwork: session.networkPassphrase,
+    );
+    return _signChecked(
+      challenge,
+      challengeXdr,
+      session,
+      Network(expected.networkPassphrase),
+    );
+  }
+
+  /// Prompts Freighter, then verifies that the body is unchanged and that a
+  /// new signature from the connected account verifies on [network].
+  Future<String> _signChecked(
+    Transaction unsigned,
+    String unsignedXdr,
+    FreighterSession session,
+    Network network,
+  ) async {
     final signedXdr = await _bridge.signTransaction(
       unsignedXdr,
-      stellarTestnetPassphrase,
+      network.networkPassphrase,
       session.address,
     );
     final signed = _parse(signedXdr);
@@ -88,7 +130,7 @@ final class FreighterWallet implements WalletPort {
       throw const WalletInvalidPayload('The wallet did not add a signature.');
     }
     final key = KeyPair.fromAccountId(session.address);
-    final hash = signed.hash(Network.TESTNET);
+    final hash = signed.hash(network);
     if (!added.any((s) => key.verify(hash, s.signature.signature))) {
       throw const WalletInvalidPayload(
         'The signature is not from the connected account.',
@@ -96,13 +138,6 @@ final class FreighterWallet implements WalletPort {
     }
     return signedXdr;
   }
-
-  /// Not supported yet: fails closed before any prompt.
-  @override
-  Future<String> signChallenge(
-    String challengeXdr,
-    ChallengeExpectations expected,
-  ) async => throw const WalletUnavailable();
 
   /// Freighter's `signAuthEntry` signs a `HashIdPreimage`, not an entry, so
   /// this builds the preimage for the entry's arm (legacy ADDRESS or
