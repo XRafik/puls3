@@ -117,6 +117,9 @@ enum ChallengeRejection {
   /// Not a canonical standard transaction envelope.
   malformed,
 
+  /// The server announced another network than the configured one.
+  network,
+
   /// The transaction source is not the configured server key.
   source,
 
