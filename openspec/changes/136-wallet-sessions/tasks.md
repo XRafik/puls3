@@ -133,8 +133,8 @@ Branch: `feat/136-wallet-sessions-02-flutter`, base PR 1. Opens only after PR 1'
 
 ### Commit 1: Auth config
 
-- [ ] 11.1 RED: `auth_config_test.dart`. `config.json` `auth` block parses server signing key, home domain, web-auth domain and network passphrase. A missing block fails closed. Dart-define overrides win over the bundled file. Done when it fails.
-- [ ] 11.2 GREEN: `AuthConfig` and the `assets/config.json` `auth` block (public G… key only). Done when 11.1 is green.
+- [x] 11.1 RED: `auth_config_test.dart`. `config.json` `auth` block parses server signing key, home domain, web-auth domain and network passphrase. A missing block fails closed. Dart-define overrides win over the bundled file. Done when it fails. Done: `test/auth/auth_config_test.dart` failed because `lib/src/auth/auth_config.dart` was missing.
+- [x] 11.2 GREEN: `AuthConfig` and the `assets/config.json` `auth` block (public G… key only). Done when 11.1 is green. Done: 8 tests green. Field names match the server's `AppAuthPublication` (`serverSigningKey`, `homeDomain`, `webAuthDomain`, `networkPassphrase`). Each field has its own dart-define (`PULS3_AUTH_SERVER_SIGNING_KEY`, `PULS3_AUTH_HOME_DOMAIN`, `PULS3_AUTH_WEB_AUTH_DOMAIN`, `PULS3_AUTH_NETWORK_PASSPHRASE`). A missing or blank field, or a key that is not a `G…` account, is `AuthConfigUnavailable` and the value is never echoed. The bundled block uses the public `examples/sep10` server account as a local placeholder.
 
 Commit: `feat(app): load the SEP-10 auth config`
 

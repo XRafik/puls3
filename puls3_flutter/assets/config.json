@@ -1,3 +1,9 @@
 {
-    "apiUrl": "http://localhost:8080"
+    "apiUrl": "http://localhost:8080",
+    "auth": {
+        "serverSigningKey": "GDVEU3DD4KOFECV66VIHWEZOYX4ZKR3WV27L464SIIPOU2IUI3JCZA57",
+        "homeDomain": "puls3.app",
+        "webAuthDomain": "auth.puls3.app",
+        "networkPassphrase": "Test SDF Network ; September 2015"
+    }
 }
