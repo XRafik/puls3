@@ -23,6 +23,8 @@ puls3 is submitted to the Serverpod **"Build Something Real"** hackathon (deadli
 - **Demo video:** _pending_ — to be recorded and uploaded (YouTube/Vimeo, under 2 minutes).
 - **Live app:** <https://puls3-4lw.pages.dev/> · **Live server:** <https://puls3-hub-on-stellar.api.serverpod.space/>
 
+> **The live deployment is behind `main`.** The deployed server serves the agent catalog (`/agent/list`) and `/health/check`; the wallet sign-in (`/walletAuth/createChallenge`) and hire (`/hire/createHire`) endpoints are **not deployed yet** (they return 404), and the public web build runs the **labelled demo hire**. The full end-to-end hire runs from this repo (server escrow relay + tests) — the submission package lists exactly what is live.
+
 ## What is puls3
 
 puls3 is a hub where AI agents are **created**, **discovered**, and **paid** on the Stellar network. It has two parts:
@@ -67,7 +69,7 @@ flowchart LR
 - **Marketplace:** browse and filter the catalog by name and skill, and open an agent's detail page with its on-chain identity, wallet, and price.
 - **Wallet sign-in:** connect Freighter and authenticate with a SEP-10 challenge; no email or password.
 - **Hire and pay:** the consumer signs `create_job` and `fund` on a Soroban ERC-8183 escrow. The server prepares each transaction, verifies the signed bytes against what it prepared, relays it, and confirms the funded job on-chain before the agent runs.
-- **Agent runtime:** the server runs the agent on the builder's chosen model provider (Cloudflare Workers AI or a BYOK provider), enforces the manifest's input/output limits and a timeout, and submits the result on-chain.
+- **Agent runtime:** the server runs the **demo agents on Cloudflare Workers AI**, enforces the manifest's input/output limits and a timeout, and stores the result for the consumer. Builder-owned provider accounts come with Studio deploy (#18/#35).
 - **On-chain identity and escrow:** an ERC-8004-aligned Identity Registry and an ERC-8183 escrow on Soroban; contract IDs and evidence in [On-chain evidence](#on-chain-evidence-testnet).
 
 Some flows are still landing: the **Studio deploy** in the app is a demo until #18/#35, and **rating/reputation** is #14. The [submission package](docs/submission/serverpod.md) lists exactly what runs end to end today.
@@ -102,7 +104,7 @@ puls3 is in **early development**. What exists today:
 - ✅ A hire funded through the puls3 server's escrow relay: the server prepares the envelopes, the consumer signs, and the server verifies, relays and confirms them ([evidence](#server-escrow-relay-hire-1-job-6))
 - ✅ The pure Dart domain model ([`puls3_domain/`](puls3_domain/))
 - ✅ The Serverpod backend: the agent catalog served from the on-chain registry, SEP-10 wallet sign-in, the escrow relay for `create_job`/`fund`, and the agent runtime ([`puls3_server/`](puls3_server/))
-- ✅ The Flutter app wired to the server for the catalog, wallet sign-in, and hire-and-pay (the Studio deploy flow is still a demo)
+- ✅ The Flutter app wired to the server for the catalog, wallet sign-in, and hire-and-pay (the Studio deploy flow is still a demo). The public web build sets `PULS3_API_URL` and `PULS3_HIRE=server`; without `PULS3_HIRE=server` it falls back to the labelled demo.
 - 🚧 Studio deploy endpoints (#18/#35) and the Reputation Registry / rating (#14)
 
 ### On-chain evidence (testnet)
@@ -265,7 +267,7 @@ Production web build:
 
 ```bash
 cd puls3_flutter
-flutter build web --release --dart-define=PULS3_API_URL=<server-url>
+flutter build web --release --dart-define=PULS3_API_URL=<server-url> --dart-define=PULS3_HIRE=server
 npx http-server build/web -p 5000     # open http://localhost:5000 (not 8080)
 ```
 
@@ -282,7 +284,7 @@ Per rules §8.1, this project existed prior to the Stellar Odyssey event. The co
 | Server (Serverpod) | Serverpod Cloud | [puls3-hub-on-stellar.api.serverpod.space](https://puls3-hub-on-stellar.api.serverpod.space/) |
 | Web app (Flutter) | Cloudflare Pages | [puls3-4lw.pages.dev](https://puls3-4lw.pages.dev/) |
 
-Server deploy and redeploy, step by step: [`puls3_server/README.md`](puls3_server/README.md#deploy-to-serverpod-cloud). Check a deployed server with `curl -s -X POST -d '{}' <server-url>/health/check`, which returns the deployed version (for example `{"__className__":"BackendHealth","version":"1.0.0+4df3ba4"}`). The web app build must point at the server with `--dart-define=PULS3_API_URL=<server-url>`.
+Server deploy and redeploy, step by step: [`puls3_server/README.md`](puls3_server/README.md#deploy-to-serverpod-cloud). Check a deployed server with `curl -s -X POST -d '{}' <server-url>/health/check`, which returns the deployed version (for example `{"__className__":"BackendHealth","version":"1.0.0+4df3ba4"}`). The web app build must point at the server with `--dart-define=PULS3_API_URL=<server-url>` and enable the real hire with `--dart-define=PULS3_HIRE=server` (unset keeps the labelled demo).
 
 ## Contributing
 

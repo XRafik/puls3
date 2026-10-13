@@ -3,7 +3,7 @@
 - **Issue:** [#4](https://github.com/Zer0-Knowledge-Hack/puls3/issues/4) · **Milestone:** Serverpod (Oct 14) · **Status:** in progress
 - **Deadline:** 2026-10-14 23:59 CEST (21:59 UTC) — **no extensions**
 - **Submission form:** <https://builderbase.com/event/build-something-real-the-serverpod-hackathon>
-- **Last checked:** 2026-10-10
+- **Last checked:** 2026-10-13
 
 This is the single place that maps the hackathon's requirements and judging criteria to concrete evidence in this repository. It is written to be honest about what works, what is a demo, and what is pending: the "Does it work" criterion (30%) explicitly asks that **nothing critical is faked**.
 
@@ -52,7 +52,7 @@ Checked 2026-10-10 against the **official rules PDF** (the primary source) and t
 | 3 | Text description (features, functionality, how built) | ✅ | [`README.md`](../../README.md) + [§5 text description](#5-text-description-for-the-submission-form) below, incl. the AI-tool disclosure |
 | 4 | Build and run instructions | ✅ | [`README.md`](../../README.md#build-and-run) + [`docs/infra/secrets.md`](../infra/secrets.md#run-against-testnet-from-a-fresh-clone) + [`CONTRIBUTING.md`](../../CONTRIBUTING.md) |
 | 5 | Demo video, < 2:00, public (YouTube/Vimeo) | ⏳ **pending** (human task) | [§4 video script](#4-demo-video-script) ready; link to be added to the README and here |
-| 6 | Testing access, free until judging ends | ✅ | Live web app + live server (both above); no login required for the catalog |
+| 6 | Testing access, free until judging ends | ⚠️ **partial** | Live web app + live server (both above); no login required for the catalog. The deployed server is **behind `main`**: it serves `/agent/list` and `/health/check`, but `/walletAuth/createChallenge` and `/hire/createHire` are **not deployed** (404), and the public web build runs the **labelled demo hire**. The full hire runs from the repo (see §3); redeploy is tracked on #31. |
 | 7 | Materials in English | ✅ | All docs and UI copy are English |
 | 8 | AI-tool use disclosed | ✅ | [§5](#5-text-description-for-the-submission-form) |
 | 9 | Submission entered on BuilderBase | ⏳ **pending** (human task) | Screenshot/email to be posted on #4 before the deadline |
@@ -71,12 +71,14 @@ Checked 2026-10-10 against the **official rules PDF** (the primary source) and t
 | Tests | `puls3_domain/test/`, `puls3_server/test/integration/` (`withServerpod`), `puls3_flutter/test/` |
 | CI gate | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) |
 
-**Honesty note (important for this criterion).** The core flow that runs end-to-end is: **catalog → wallet sign-in → hire → create_job → fund → on-chain verification → agent run**. Two parts are **not** wired to the server yet and must not be presented as real in the video:
+**Honesty note (important for this criterion).** The full hire runs end-to-end **from this repo**: **catalog → wallet sign-in → hire → create_job → fund → on-chain verification → agent run** (server escrow relay evidence below; `puls3_server/tool/e2e_relay_testnet.dart`). On the **live deployment** only the catalog and health are served today: `/walletAuth/createChallenge` and `/hire/createHire` return 404 and the public web build runs the labelled demo (redeploy tracked on #31). Two parts are **not** wired to the server yet and must not be presented as real in the video:
 
 - **Studio deploy** uses `FakeDeployGateway` in the app ([`puls3_flutter/lib/src/deploy/fake_deploy_gateway.dart`](../../puls3_flutter/lib/src/deploy/fake_deploy_gateway.dart)); the server deploy endpoints are #18/#35. The UI already labels its result as a demo.
 - **Rating/reputation** is UI-only today (agents show `rating: 0.0`; no feedback endpoint); the Reputation Registry is #14.
 
 The agent **runtime** is implemented (`puls3_server/lib/src/runtime/`) but **off by default** (`PULS3_RUNTIME_ENABLED=false`), and the deployed server leaves the chain tracker off.
+
+**Which agents can complete a real hire.** Only `agt-006` (Copy Forge) and `agt-007` (Support Relay) have manifests (`puls3_server/lib/src/runtime/demo_manifests.dart`); the other six fail their run as `manifest_unavailable` and the USDC waits in escrow until `expired_at`. Hire one of those two in the demo.
 
 ### Use of the Serverpod stack (25%)
 
@@ -101,9 +103,9 @@ The agent **runtime** is implemented (`puls3_server/lib/src/runtime/`) but **off
 | SEP-10 wallet authentication | `puls3_server/lib/src/auth/sep10_verifier.dart` |
 | Custodied agent wallets with encrypted secrets | `puls3_server/lib/src/agent/stellar_agent_wallet_custody.dart`, `agent/aes_gcm_secret_cipher.dart` |
 | Agent runtime with provider adapters and a timeout contract | `puls3_server/lib/src/runtime/agent_runner.dart`, `runtime/adapters/anthropic_runtime.dart`, `runtime/adapters/workers_ai_runtime.dart` |
-| ERC-8183 escrow and ERC-8004-aligned identity on Soroban | `contracts/escrow/`, `contracts/identity-registry/`, [ADR-0005](../adr/0005-align-agent-commerce-with-erc-8183-and-erc-8004.md) |
+| ERC-8183 escrow and ERC-8004-aligned identity on Soroban | `contracts/contracts/escrow/`, `contracts/contracts/identity-registry/`, [ADR-0005](../adr/0005-align-agent-commerce-with-erc-8183-and-erc-8004.md) |
 | Catalog indexer (bootstrap + event cursor, chain as source of truth) | `puls3_server/lib/src/agent/catalog_indexer.dart` |
-| Six ADRs and a spike library | [`docs/adr/`](../adr/), [`docs/spikes/`](../spikes/) |
+| Five ADRs and a spike library | [`docs/adr/`](../adr/), [`docs/spikes/`](../spikes/) |
 
 ### Usefulness (20%)
 
@@ -116,15 +118,15 @@ The agent **runtime** is implemented (`puls3_server/lib/src/runtime/`) but **off
 
 ## 4. Demo video script
 
-Target: **< 2:00**, English, YouTube or Vimeo, public. The rules say presentation quality is not scored separately, so the video shows the working product, not production polish. **Do not fake the Studio deploy or the rating.**
+Target: **< 2:00**, English, YouTube or Vimeo, public. The rules say presentation quality is not scored separately, so the video shows the working product, not production polish. **Do not fake the Studio deploy, the rating, or an accept/`complete` step.**
 
 | Scene | Duration | What is shown |
 |---|---|---|
 | 1. What puls3 is | 0:00–0:10 | Title card + one line: "Create AI agents, find them, and pay them per task in USDC on Stellar." |
 | 2. Marketplace (live) | 0:10–0:25 | The web app loads the catalog **from the deployed Serverpod server**; open an agent detail (skills, price, on-chain wallet). |
-| 3. Connect wallet | 0:25–0:40 | Connect Freighter, sign the SEP-10 challenge, session established. |
-| 4. Hire and pay | 0:40–1:05 | Enter a task, sign `create_job`, sign `fund`; show "Verifying payment…" → `funded`; open the escrow transaction on stellar.expert. |
-| 5. Agent runs, result, accept | 1:05–1:30 | The server runs the agent after the payment is verified, returns the result; the consumer accepts (`complete`); show the completion transaction. |
+| 3. Connect wallet | 0:25–0:40 | Connect Freighter (links the wallet). The SEP-10 sign-in prompt comes with the hire, at **Confirm & sign** — not on connect. |
+| 4. Hire and pay | 0:40–1:05 | Hire **Support Relay (0.10 USDC)** or **Copy Forge (0.30 USDC)** — the only agents with manifests. Enter a task, then three wallet prompts: sign in (SEP-10), `create_job`, `fund`; show "Verifying payment…" → `funded`; open the escrow tx on stellar.expert. (With #159, a wallet short on testnet USDC is stopped before the first prompt.) |
+| 5. Agent runs, result | 1:05–1:30 | The server runs the agent after the payment is verified and returns the result; open **View hire** (`/hires/:id`). The app has no accept/`complete` step yet, so show job 3's on-chain `complete` from the evidence section (§3) rather than recording one. |
 | 6. On-chain + stack recap | 1:30–1:45 | The escrow contract and completed job on stellar.expert; the Serverpod health response naming the deployed commit. |
 | 7. Close | 1:45–1:55 | Stack (Flutter + Serverpod 4 + Soroban), repo link, live links. State plainly that Studio deploy and rating are next (#18/#35, #14). |
 
@@ -136,11 +138,11 @@ Target: **< 2:00**, English, YouTube or Vimeo, public. The rules say presentatio
 
 > **puls3 — the agent hub on Stellar.** puls3 is a full-stack marketplace where builders create AI agents, consumers find them, and agents are paid per task in USDC on the Stellar network. It is a Flutter web app backed by a **Serverpod 4** backend in Dart, with Soroban smart contracts for agent identity and an ERC-8183 escrow for payments.
 >
-> **Features.** An Agent Studio (define an agent's name, skills, model, prompt and price); a Marketplace that lists agents from an on-chain identity registry; wallet-based sign-in (SEP-10) with Freighter; a hire flow where the consumer signs `create_job` and `fund` on a Soroban escrow and the server verifies the funded job on-chain before running the agent; and a Dart agent runtime that executes the task on the builder's chosen model provider.
+> **Features.** An Agent Studio to define an agent (name, skills, model, prompt, price) — its deploy is a **labelled demo** today (#18/#35); a Marketplace that lists agents from an on-chain identity registry; wallet-based sign-in (SEP-10) with Freighter; a hire flow where the consumer signs `create_job` and `fund` on a Soroban escrow and the server verifies the funded job on-chain before running the agent; and a Dart agent runtime that runs the **demo agents on Cloudflare Workers AI** (builder-owned providers come with Studio deploy).
 >
 > **How it was built.** The server is Serverpod 4 (endpoints, ORM and migrations, generated client, `serverpod_auth_idp`, health checks, `withServerpod` tests) deployed to Serverpod Cloud; the app is Flutter web; the domain is a pure-Dart package with no framework imports; the chain work goes through a single adapter that builds and verifies Soroban envelopes. The escrow relay is the core idea: the server prepares each transaction, the user's wallet signs it unchanged, the server verifies the signed bytes against what it prepared, relays it, and a tracker confirms it on-chain. Decisions are recorded in the ADRs under `docs/adr/`.
 >
-> **AI tools disclosure.** This project was developed with AI coding assistants and agentic tooling (including OpenCode), as permitted by §4 of the rules.
+> **AI tools disclosure.** This project was developed with AI coding assistants and agentic tooling (including OpenCode), as permitted by §4 of the rules. *(The full list is confirmed with each team member before submitting — see §7.)*
 
 ## 6. Compliance and risks
 
@@ -150,7 +152,7 @@ Target: **< 2:00**, English, YouTube or Vimeo, public. The rules say presentatio
 | Third-party marks/music in the video | None planned. Confirm before upload. |
 | Third-party APIs in the project | Stellar RPC, Circle testnet USDC, LLM providers; all used under their terms. |
 | Private repo sharing | Not needed: the repository is public. |
-| Testing access | Live app + server are public and free; keep them up until 2026-10-20 17:00 CEST. |
+| Testing access | Live app + server are public and free (catalog live; the hire is the labelled demo until the redeploy on #31); keep them up until 2026-10-20 17:00 CEST. |
 | Financial/preferential support (§4) | Confirm the project received none from Serverpod/BuilderBase. |
 | Team size | Max 4; confirm the submitting team. |
 
@@ -158,6 +160,7 @@ Target: **< 2:00**, English, YouTube or Vimeo, public. The rules say presentatio
 
 - [ ] Record and upload the demo video (< 2:00, public) and add the link to the README and [§2](#2-required-items--checklist)
 - [ ] Confirm the "New Projects Only" eligibility with the organizers
+- [ ] Confirm the §5 AI-tool disclosure lists every AI tool the team used
 - [ ] Enter the submission on BuilderBase before 2026-10-14 23:59 CEST
 - [ ] Post the submission confirmation (screenshot/email) on [#4](https://github.com/Zer0-Knowledge-Hack/puls3/issues/4)
 - [ ] Keep the live app and server up until the Judging Period ends (2026-10-20 17:00 CEST)
