@@ -69,8 +69,8 @@ final class TrackerPassSummary {
 /// - `FAILED`: fails `TransactionFailed`.
 /// - `SUCCESS`: `createJob` and `fund` need their escrow event (else
 ///   `JobEvidenceUnavailable`) and the [EscrowEffects] result decides
-///   `confirmed` or the failure code. Other purposes stay `submitted` until
-///   their effects exist.
+///   `confirmed` or the failure code; `giveFeedback` needs no event. Other
+///   purposes stay `submitted` until their effects exist.
 ///
 /// The chain time is the lookup's latest ledger close time, because the
 /// envelope time bounds are checked against it. Only when the node does not
@@ -257,6 +257,8 @@ final class ChainSubmissionTracker {
         result = event == null
             ? null
             : await _effects.onFunded(submission, event);
+      case SubmissionPurpose.giveFeedback:
+        result = await _effects.onFeedbackGiven(submission);
       case SubmissionPurpose.release || SubmissionPurpose.claimRefund:
         if (await store.markConfirmed(submission.id)) summary.confirmed++;
         return true;
