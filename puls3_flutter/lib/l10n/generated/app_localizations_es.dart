@@ -33,6 +33,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navMarketplace => 'Marketplace';
 
   @override
+  String get navHome => 'Inicio';
+
+  @override
   String get navOpenApp => 'Abrir app';
 
   @override
@@ -48,12 +51,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get landingKicker => 'El hub de agentes en Stellar';
 
   @override
-  String get landingHeadline =>
-      'Crea. Descubre. Paga.\nAgentes de IA en Stellar.';
+  String get landingHeadline => 'Tu IA trabaja. Todavía no cobra.';
 
   @override
   String get landingLead =>
-      'Crea agentes de IA con identidad y wallet on-chain, encuentra el indicado en un solo Marketplace y págalo por tarea en USDC, en escrow hasta que el trabajo esté listo.';
+      'El USDC queda en escrow hasta que el trabajo esté listo.';
 
   @override
   String get landingOpenStudio => 'Abrir Studio';
@@ -77,14 +79,201 @@ class AppLocalizationsEs extends AppLocalizations {
   String get landingSeeFirstHire => 'Ver el primer hire pagado a escrow';
 
   @override
-  String get landingFinalCtaTitle => 'Empieza con un agente.';
+  String get landingFinalCtaTitle => 'Ya usas IA. ¿Puede cobrar?';
 
   @override
   String get landingFinalCtaLead =>
-      'Contrata uno en testnet, crea el tuyo en el Studio o ayuda a construir puls3 de forma abierta.';
+      'Escribe y entrega, claro. Recibir USDC por una tarea, no. Para eso es puls3.';
+
+  @override
+  String get landingWhyEyebrow => 'Por qué puls3';
+
+  @override
+  String get landingWhyTitle =>
+      'Los agentes de IA ya trabajan. Cobrar es lo difícil.';
+
+  @override
+  String get landingProblem1Title => 'Crear un agente que cobre es lento';
+
+  @override
+  String get landingProblem1Body =>
+      'El Studio arma una definición revisada (nombre, prompt, modelo y precio). Desplegarlo con wallet e id on-chain está en camino.';
+
+  @override
+  String get landingProblem2Title =>
+      'Encontrar un agente de confianza es difícil';
+
+  @override
+  String get landingProblem2Body =>
+      'Un Marketplace leído del registro on-chain: busca por habilidad, compara precios y verifica quién es.';
+
+  @override
+  String get landingProblem3Title => 'Pagar por tarea no encaja en una tarjeta';
+
+  @override
+  String get landingProblem3Body =>
+      'Paga por tarea en USDC en Stellar, en escrow hasta aprobar el resultado, en segundos y con comisiones de fracción de centavo.';
+
+  @override
+  String get landingHowEyebrow => 'Cómo funciona';
+
+  @override
+  String get landingHowTitle =>
+      'Dos pasos para contratar. El Studio está en camino.';
+
+  @override
+  String get landingStep1Title => 'Descubre y contrata';
+
+  @override
+  String get landingStep1Body =>
+      'Un Marketplace leído del registro. Compara habilidades y precios, y describe la tarea.';
+
+  @override
+  String get landingStep2Title => 'Paga a escrow';
+
+  @override
+  String get landingStep2Body =>
+      'Tu wallet fondea el trabajo en USDC. El contrato retiene el pago hasta que el trabajo esté listo.';
+
+  @override
+  String get landingStep3Title => 'Crea un agente';
+
+  @override
+  String get landingStep3Body =>
+      'Ponle nombre, un precio y describe lo que hace. El Studio valida la definición mientras escribes. El deploy on-chain está en camino.';
+
+  @override
+  String get landingBentoEscrowTitle => 'El pago no va al agente';
+
+  @override
+  String get landingBentoEscrowBody =>
+      'Tu wallet firma. El contrato de escrow retiene el USDC hasta que el trabajo se apruebe o se rechace.';
+
+  @override
+  String get landingBentoWallet => 'Wallet';
+
+  @override
+  String get landingBentoEscrow => 'Escrow';
+
+  @override
+  String get landingBentoAgent => 'Agente';
+
+  @override
+  String get landingBentoStudioTitle => 'Studio';
+
+  @override
+  String get landingBentoStudioBody =>
+      'Define un agente con identidad y precio. El deploy on-chain está en camino.';
+
+  @override
+  String get landingBentoIdentityTitle => 'Identidad on-chain';
+
+  @override
+  String get landingBentoIdentityBody =>
+      'Cada agente del Marketplace tiene un id en el registro. Puedes ver quién es antes de pagar.';
+
+  @override
+  String get landingDemoLive => 'Demo en vivo';
+
+  @override
+  String get landingHireTry => 'Presiona Contratar';
+
+  @override
+  String get landingHireHint =>
+      'Presiona Contratar. Vas a ver el USDC cerrarse, al agente trabajar, entregar y cobrar solo al final.';
+
+  @override
+  String get landingHireTask =>
+      'Revisa esta cuenta de Stellar en busca de pagos entrantes.';
+
+  @override
+  String get landingHireCta => 'Contratar';
+
+  @override
+  String get landingHireSigning => 'Tú contratas';
+
+  @override
+  String get landingHireLocking => 'El USDC se cierra';
+
+  @override
+  String get landingHireWorking => 'El agente trabaja';
+
+  @override
+  String get landingHireDelivering => 'El agente entrega';
+
+  @override
+  String get landingHireReview => 'Tú revisas';
+
+  @override
+  String get landingHireDone => 'Aceptas — pagado';
+
+  @override
+  String landingHireWalletBody(String amount) {
+    return 'Abres el trabajo. $amount USDC sigue en tu wallet: el agente aún no cobra.';
+  }
+
+  @override
+  String get landingHireLockBody =>
+      'El dinero entra a un baúl: el contrato de escrow. No puede salir como si nada.';
+
+  @override
+  String get landingHireWorkBody =>
+      'Se notifica al agente y empieza. El baúl sigue cerrado todo el tiempo.';
+
+  @override
+  String get landingHireDeliverBody =>
+      'El trabajo llega a ti. El dinero sigue sin poder salir del baúl.';
+
+  @override
+  String get landingHireReviewBody =>
+      'Revisas el trabajo. No se paga nada hasta que aceptas.';
+
+  @override
+  String get landingHireReleaseBody =>
+      'El baúl paga al agente y libera el trabajo. Sin aceptar, no hay pago ni trabajo gratis.';
+
+  @override
+  String get landingHireReplay => 'Repetir';
+
+  @override
+  String get landingHireStepHire => 'Contratar';
+
+  @override
+  String get landingHireStepLock => 'Cerrar';
+
+  @override
+  String get landingHireStepWork => 'Trabaja';
+
+  @override
+  String get landingHireStepDeliver => 'Entrega';
+
+  @override
+  String get landingHireStepReview => 'Revisas';
+
+  @override
+  String get landingHireStepPay => 'Paga';
+
+  @override
+  String get landingHireYou => 'Tú';
+
+  @override
+  String get landingHireLegendUsdc => 'USDC';
+
+  @override
+  String get landingHireLegendWork => 'Trabajo';
+
+  @override
+  String get landingComing => 'En camino';
+
+  @override
+  String get landingOpenExplorer => 'Abrir en StellarExpert';
 
   @override
   String get landingWhyStellar => 'Por qué Stellar';
+
+  @override
+  String get landingWhyStellarTitle =>
+      'Micropagos que se liquidan mientras el agente trabaja.';
 
   @override
   String get landingSettleTitle => 'Liquidación en ~5 s';
@@ -113,6 +302,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get footerBrand => 'Marca';
+
+  @override
+  String get footerProduct => 'Producto';
+
+  @override
+  String get footerResources => 'Recursos';
+
+  @override
+  String get footerIssues => 'Issues';
+
+  @override
+  String get footerTestnet =>
+      'Funciona en Stellar Testnet. Solo USDC de prueba.';
+
+  @override
+  String get footerBuiltOn => 'Hecho en';
 
   @override
   String get commonRetry => 'Reintentar';
