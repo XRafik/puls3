@@ -147,6 +147,50 @@ fn owner_cannot_rate_own_agent() {
 }
 
 #[test]
+fn agent_wallet_cannot_rate_own_agent() {
+    let ctx = setup();
+    let identity = IdentityRegistryContractClient::new(&ctx.env, &ctx.identity_id);
+    let wallet = Address::generate(&ctx.env);
+    identity.set_agent_wallet(&ctx.agent_owner, &ctx.agent_id, &wallet);
+    assert_eq!(
+        identity.get_agent_wallet(&ctx.agent_id),
+        Some(wallet.clone())
+    );
+
+    assert!(matches!(
+        ctx.rep().try_give_feedback(
+            &wallet,
+            &ctx.agent_id,
+            &5,
+            &0,
+            &ctx.s("quality"),
+            &ctx.s("speed"),
+            &ctx.s("https://agent.example/endpoint"),
+            &ctx.s("https://reviews.example/1"),
+            &ctx.hash(7),
+        ),
+        Err(Ok(ReputationError::SelfFeedback)),
+    ));
+    // The owner is still rejected, and an honest client still gets in.
+    assert!(matches!(
+        ctx.rep().try_give_feedback(
+            &ctx.agent_owner,
+            &ctx.agent_id,
+            &5,
+            &0,
+            &ctx.s("quality"),
+            &ctx.s("speed"),
+            &ctx.s("https://agent.example/endpoint"),
+            &ctx.s("https://reviews.example/1"),
+            &ctx.hash(7),
+        ),
+        Err(Ok(ReputationError::SelfFeedback)),
+    ));
+    let reviewer = Address::generate(&ctx.env);
+    ctx.give(&reviewer, ctx.agent_id, 5, 0);
+}
+
+#[test]
 fn value_decimals_and_range_are_checked() {
     let ctx = setup();
     let reviewer = Address::generate(&ctx.env);

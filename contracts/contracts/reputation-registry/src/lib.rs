@@ -172,6 +172,7 @@ pub struct OwnershipRenounced {
 pub trait IdentityRegistryInterface {
     fn agent_exists(e: &Env, agent_id: u32) -> bool;
     fn is_authorized_or_owner(e: &Env, spender: Address, agent_id: u32) -> bool;
+    fn get_agent_wallet(e: &Env, agent_id: u32) -> Option<Address>;
 }
 
 #[contract]
@@ -217,6 +218,14 @@ impl ReputationRegistryContract {
             return Err(ReputationError::AgentNotFound);
         }
         if identity.is_authorized_or_owner(&caller, &agent_id) {
+            return Err(ReputationError::SelfFeedback);
+        }
+        // The payout wallet can differ from the owner (set_agent_wallet); it
+        // rates itself the same way (audit R-3).
+        if identity
+            .get_agent_wallet(&agent_id)
+            .is_some_and(|w| w == caller)
+        {
             return Err(ReputationError::SelfFeedback);
         }
 
